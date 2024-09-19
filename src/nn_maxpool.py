@@ -32,7 +32,7 @@ net = jlNet()
 # output = net(input)
 # print(output)
 
-writer = SummaryWriter("./logs")
+writer = SummaryWriter("../logs")
 step = 0
 
 for data in dataLoader:

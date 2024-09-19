@@ -23,7 +23,7 @@ net = jlNet()
 print(net)
 
 
-writer = SummaryWriter("logs")
+writer = SummaryWriter("../logs")
 step = 0
 for data in dataLoader:
     imgs, targets = data
