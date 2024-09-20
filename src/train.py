@@ -9,6 +9,8 @@ from model import *
 from torch.utils.tensorboard import SummaryWriter
 import time
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 # 数据集
 train_set = torchvision.datasets.CIFAR10("../dataset", train=True, transform=torchvision.transforms.ToTensor())
 test_set = torchvision.datasets.CIFAR10("../dataset", train=False, transform=ToTensor())
@@ -22,13 +24,16 @@ print(f"训练集的大小为：{train_set_len}")
 print(f"测试集的大小为：{test_set_len}")
 
 net = jlNet()
+net = net.to(device)
 
 # loss
 loss_fn = nn.CrossEntropyLoss()
+loss_fn.to(device)
 
 # 优化器
 learning_rate = 1e-2
 optimizer = torch.optim.SGD(net.parameters(), lr=learning_rate)
+
 
 # 记录训练次数
 total_train_step = 0
@@ -36,7 +41,7 @@ total_train_step = 0
 total_test_step = 0
 
 # 训练轮数
-epoch = 10
+epoch = 20
 
 # writer = SummaryWriter("../logs_train")
 start_time = time.time()
@@ -48,6 +53,8 @@ for i in range(epoch):
     for data in train_dataloader:
         optimizer.zero_grad()
         imgs, targets = data
+        imgs = imgs.to(device)
+        targets = targets.to(device)
         output = net(imgs)
         # 优化器优化
         loss = loss_fn(output, targets)
@@ -67,17 +74,19 @@ for i in range(epoch):
     with torch.no_grad():
         for data in test_dataloader:
             imgs, targets = data
+            imgs = imgs.to(device)
+            targets = targets.to(device)
             output = net(imgs)
             loss = loss_fn(output, targets)
             total_test_loss += loss
-            accuracy = (output.argmax(1).sum() == targets) + accuracy
+            accuracy = (output.argmax(1) == targets).sum().item()
             total_accuracy += accuracy
 
     print("整体测试集loss为:{}".format(total_test_loss))
     print("整体测试集上的正确率:{}".format(total_accuracy/test_set_len))
     total_test_step += 1
     # writer.add_scalar("test_loss", total_test_loss, total_test_step)
-    torch.save(net, "jlNet_{}.pth".format(total_test_step))
+    # torch.save(net, "jlNet_{}.pth".format(total_test_step))
     print("模型保存")
 
 # writer.close()
